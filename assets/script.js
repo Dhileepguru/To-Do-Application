@@ -1,39 +1,53 @@
-let button = document.getElementById('add')
-let todoList = document.getElementById('todoList')
-let input = document.getElementById('input');
-//local storage,cookies
-let todos = [];
-window.onload = ()=>{
-    todos = JSON.parse(localStorage.getItem('todos')) || []
-    todos.forEach(todo=>addtodo(todo))
+
+const taskForm = document.getElementById('task-form');
+const taskList = document.getElementById('task-list');
+const clearBtn = document.getElementById('clear-btn');
+
+
+const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+function displayTasks() {
+    taskList.innerHTML = '';
+    tasks.forEach((task, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            ${task}
+            <button class="delete" data-index="${index}">Delete</button>
+        `;
+        taskList.appendChild(li);
+    });
 }
 
-button.addEventListener('click',()=>{
-    todos.push(input.value)
-    localStorage.setItem('todos',JSON.stringify(todos))
-    addtodo(input.value)
-    input.value=''
-})
+taskForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const taskInput = document.getElementById('task');
+    const taskText = taskInput.value.trim();
 
-function addtodo(todo){
-    let para = document.createElement('p');
-    para.innerText = todo;
-    todoList.appendChild(para)
-    
-    para.addEventListener('click',()=>{
-        para.style.textDecoration = 'line-through'
-        remove(todo)
-    })
-    para.addEventListener('dblclick',()=>{
-        todoList.removeChild(para)
-        remove(todo)
-    })
-}
+    if (taskText !== '') {
+        tasks.push(taskText);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        taskInput.value = '';
+        displayTasks();
+        // Add the 'new-task' class to the newly added task
+        const newlyAddedTask = taskList.lastChild;
+        newlyAddedTask.classList.add('new-task');
+    }
+});
 
-function remove(todo){
-    let index = todos.indexOf(todo)
-    if (index > -1) {
-        todos.splice(index, 1);
-      }
-    localStorage.setItem('todos',JSON.stringify(todos))
-}
+
+taskList.addEventListener('click', function (e) {
+    if (e.target.classList.contains('delete')) {
+        const index = e.target.getAttribute('data-index');
+        tasks.splice(index, 1);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        displayTasks();
+    }
+});
+
+
+clearBtn.addEventListener('click', function () {
+    localStorage.removeItem('tasks');
+    tasks.length = 0;
+    displayTasks();
+});
+
